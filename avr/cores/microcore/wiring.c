@@ -1,6 +1,6 @@
 /*** MicroCore - wiring.c ***
 An Arduino core designed for ATtiny13
-Based on the work done by "smeezekitty" 
+Based on the work done by "smeezekitty"
 Modified and maintained by MCUdude
 https://github.com/MCUdude/MicroCore
 
@@ -23,14 +23,14 @@ timers.
 // The WDT uses it's own clock, so this function is valid for all F_CPUs.
 #ifdef ENABLE_MILLIS
 uint32_t millis()
-{  
+{
   return wdt_interrupt_counter;
 }
 #endif // ENABLE_MILLIS
 
 
 /***** MICROS() *****/
-// Enabling micros() will cause the processor to interrupt more often (every 2048th clock cycle if 
+// Enabling micros() will cause the processor to interrupt more often (every 2048th clock cycle if
 // F_CPU < 4.8 MHz, every 16384th clock cycle if F_CPU >= 4.8 MHz. This will add some overhead when F_CPU is
 // less than 4.8 MHz. It's disabled by default because it occupies precious flash space and loads the CPU with
 // additional interrupts and calculations. Also note that micros() aren't very precise for frequencies that 64
@@ -47,14 +47,14 @@ ISR(TIM0_OVF_vect)
 uint32_t micros()
 {
   uint32_t x;
-  uint8_t t;  
-  
-  uint8_t oldSREG = SREG; // Preserve old SREG value 
+  uint8_t t;
+
+  uint8_t oldSREG = SREG; // Preserve old SREG value
   t = TCNT0;              // Store timer0 counter value
   cli();                  // Disable global interrupts
   x = timer0_overflow;    // Store timer0 overflow count
   SREG = oldSREG;         // Restore SREG
-  
+
   #if F_CPU == 20000000L
     // Each timer tick is 1/(16MHz/64) = 3.2us long. We multiply the timer0_overflow variable
     // by 256 (bitshift 8 times) and we add the current timer count TCNT0. Since each tick is 3.2us long,
@@ -69,7 +69,7 @@ uint32_t micros()
     // Each timer tick is 1/(12MHz/64) = 5.333us long. We multiply the timer0_overflow variable
     // by 256 (bitshift 8 times) and we add the current timer count TCNT0. Since each tick is 5.333us long,
     // we multiply by 5 at the end
-    return ((x << 8) + t) * 5;  
+    return ((x << 8) + t) * 5;
   #elif F_CPU == 9600000L
     // Each timer tick is 1/(9.6MHz/64) = 6.666us long. We multiply the timer0_overflow variable
     // by 256 (bitshift 8 times) and we add the current timer count TCNT0. Since each tick is 6.666us long,
@@ -94,17 +94,17 @@ uint32_t micros()
     // Each timer tick is 1/(1MHz/8) = 8us long. We multiply the timer0_overflow variable
     // by 256 (bitshift 8 times) and we add the current timer count TCNT0. Since each tick is 8us long,
     // we multiply by 8 at the end
-    return ((x << 8) + t) * 8;  
+    return ((x << 8) + t) * 8;
   #elif F_CPU == 600000L
     // Each timer tick is 1/(600kHz/8) = 13.333us long. We multiply the timer0_overflow variable
     // by 256 (bitshift 8 times) and we add the current timer count TCNT0. Since each tick is 13.333us long,
     // we multiply by 13 at the end
-    return ((x << 8) + t) * 13;    
+    return ((x << 8) + t) * 13;
   #elif F_CPU == 128000L
     // Each timer tick is 1/(128kHz/8) = 62.5us long. We multiply the timer0_overflow variable
     // by 256 (bitshift 8 times) and we add the current timer count TCNT0. Since each tick is 62.5us long,
     // we multiply by 62 at the end
-    return ((x << 8) + t) * 62;      
+    return ((x << 8) + t) * 62;
  #endif
 
 }
@@ -112,27 +112,27 @@ uint32_t micros()
 
 
 // Wrapper to deal with _delay_ms(), which is an inline function
-void delay(uint16_t ms)
+void delay(uint32_t ms)
 {
   do
     _delay_ms(1);
   while(--ms);
-    
+
 }
 
 
 // This init() function will be executed before the setup() function does
-// Edit the core_settings.h file to choose what's going to be initialized 
+// Edit the core_settings.h file to choose what's going to be initialized
 // and what's not.
 void init()
 {
 
-  #ifdef SETUP_PWM  
+  #ifdef SETUP_PWM
     // Set Timer0 prescaler
     #if defined(PWM_PRESCALER_AUTO)
       #if F_CPU >= 4800000L
         TCCR0B = _BV(CS00) | _BV(CS01); // PWM frequency = (F_CPU/256) / 64
-      #else  
+      #else
         TCCR0B = _BV(CS01);             // PWM frequency = (F_CPU/256) / 8
       #endif
     #elif defined(PWM_PRESCALER_NONE)   // PWM frequency = (F_CPU/256) / 1
@@ -146,36 +146,36 @@ void init()
     #elif  defined(PWM_PRESCALER_1024)  // PWM frequency = (F_CPU/256) / 1024
       TCCR0B = _BV(CS00) | _BV(CS02);
     #endif
-    
+
     // Set waveform generation mode
     #if defined(PWM_FAST)
       TCCR0A = _BV(WGM00) | _BV(WGM01);
     #elif defined(PWM_PHASE_CORRECT)
       TCCR0A = _BV(WGM00);
     #endif
-  #endif  
-  
-  // Enable WDT interrupt and enable global interrupts  
+  #endif
+
+  // Enable WDT interrupt and enable global interrupts
   #ifdef ENABLE_MILLIS
     // Set up WDT interrupt with 16 ms prescaler
     WDTCR = _BV(WDTIE);
     // Enable global interrupts
     sei();
   #endif
-  
+
   // WARNING! Enabling micros() will affect timing functions!
-  #ifdef ENABLE_MICROS   
+  #ifdef ENABLE_MICROS
     // Set a suited prescaler based on F_CPU
     #if F_CPU >= 4800000L
-      TCCR0B = _BV(CS00) | _BV(CS01); // F_CPU/64 
-    #else  
+      TCCR0B = _BV(CS00) | _BV(CS01); // F_CPU/64
+    #else
       TCCR0B = _BV(CS01);             // F_CPU/8
-    #endif      
+    #endif
     // Enable overflow interrupt on Timer0
     TIMSK0 = _BV(TOIE0);
     // Set timer0 couter to zero
-    TCNT0 = 0; 
+    TCNT0 = 0;
     // Turn on global interrupts
     sei();
-  #endif 
+  #endif
 }

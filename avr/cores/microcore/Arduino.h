@@ -1,11 +1,11 @@
 /*** MicroCore - Arduino.h ***
 An Arduino core designed for ATtiny13
-Based on the work done by "smeezekitty" 
+Based on the work done by "smeezekitty"
 
 Modified and maintained by MCUdude
 https://github.com/MCUdude/MicroCore
-*/  
-                
+*/
+
 #ifndef Arduino_h
 #define Arduino_h
 
@@ -47,7 +47,7 @@ extern "C"{
   #define DEG_TO_RAD 0.0174533
   #define RAD_TO_DEG 57.2958
   #define SERIAL 0
-  #define DISPLAY 1 
+  #define DISPLAY 1
   #define LSBFIRST 0
   #define MSBFIRST 1
   #define CHANGE 1
@@ -89,9 +89,9 @@ extern "C"{
   void init(void);
   void pinMode(uint8_t pin, uint8_t mode);
   void digitalWrite(uint8_t pin, uint8_t val);
-  void delay(uint16_t ms);
+  void delay(uint32_t ms);
   uint8_t digitalRead(uint8_t pin);
-  int16_t analogRead(uint8_t pin); 
+  int16_t analogRead(uint8_t pin);
   void analogReference(uint8_t mode);
   void turnOffPWM(uint8_t pin);
   void analogWrite(uint8_t pin, uint8_t val);
@@ -106,7 +106,7 @@ extern "C"{
   void loop(void);
   void yield(void) __attribute__ ((weak, alias("__empty")));
   static void __empty() { /* Empty*/ }
- 
+
 #ifdef __cplusplus
 } // extern "C"
 
@@ -117,21 +117,21 @@ extern "C"{
   void toneRaw(uint8_t pin, uint8_t midPoint, uint32_t lengthTicks, uint8_t prescaleBitMask);
   void noTone(uint8_t pin = 255);
   void stopTone(void);
- 
+
   uint16_t makeWord(uint16_t w);
   uint16_t makeWord(uint8_t h, uint8_t l);
   #define word(...) makeWord(__VA_ARGS__)
-  
+
   // Math functions
   int32_t random(int32_t howbig);
   int32_t random(int32_t howsmall, int32_t howbig);
   void randomSeed(uint16_t seed);
-  template <typename A, typename B, typename C, typename D, typename E> 
+  template <typename A, typename B, typename C, typename D, typename E>
   int32_t map(A x, B in_min, C in_max, D out_min, E out_max)
   {
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
   }
-  
+
 #endif
 
 #endif
